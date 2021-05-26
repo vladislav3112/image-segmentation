@@ -6,7 +6,7 @@ def push(u, v, f, e, c, graf, h, H, overflow):
     f[u][v] += d
     f[v][u] -= d
     e[u] -= d
-    if f[u][v] > 0 and u not in graf[v]: #test6 out of range graf have max idx 98 but v is 99
+    if f[u][v] != 0 and u not in graf[v]: 
         graf[v].append(u)
     if e[u] == 0:
         overflow[H].remove(u)
@@ -30,7 +30,7 @@ def newH(H, overflow):
 
     
 def key_min(u, h, c, f, v):
-    if c[u][v] - f[u][v]> 0:
+    if c[u][v] - f[u][v]> 0 and h[v] >= h[u]:
         return h[v]
     else:
         return 10000000
@@ -127,7 +127,7 @@ for i in range (edge_count):
     vertex1, vertex2, flow = map(int, input().split())
     flow_matrix[vertex1 - 1][vertex2 - 1] = int(flow)
 
-print(flow_matrix)
+#print(flow_matrix)
 edge_array = []
 for i in range (vertex_count):
     if(len(np.argwhere(flow_matrix[i]))>0):
@@ -141,7 +141,7 @@ if (vertex_count != edge_count):
 
 n = vertex_count # число вершин
 graf = edge_array
-print(graf)
+#print(graf)
 # храним граф в виде списка смежных вершин
 graf0 = copy.deepcopy(graf) # сохраним исходный граф
 graf1 = [[] for i in range(n)] # сохраняем граф в обратном виде
@@ -164,24 +164,16 @@ overflow[0].extend(graf[0]) # после оптимизации изменить
 if n-1 in overflow[0]:
     overflow[0].remove(n-1)
 count_e(graf, e, c, f) # проталкивание в смежные с истоком
-H = global_r_opt(c, h, 0, overflow, graf0, graf1) # первая оптимизация
+H = global_r_opt(c, h, -1, overflow, graf0, graf1) # первая оптимизация
 
 m = 10 # частота оптимизации
 count = 0
-# overflow.sort(key = lambda k: h[k], reverse = True)
-# отсортировать по высоте от максимума к минимуму
-print(graf)
-print('c =', c)
-print('f =', f)
-print('e =', e)
-print('h =', h)
-print('H =', H)
-print(overflow)
+
 
 
 while H >= 0:
     if(len(overflow[H])>0):
-        u = overflow[H][0] #test2, test4 index out of range // overflow[H][0] = 0 but overflow[H][0] isnt 
+        u = overflow[H][0] 
     else:   
         H = H-1
         continue
