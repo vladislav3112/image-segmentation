@@ -8,7 +8,7 @@ def push(u, v, f, e, c, graf, h, H, overflow):
     f[u][v] += d
     f[v][u] -= d
     e[u] -= d
-    if f[u][v] != 0 and u not in graf[v]: #test6 out of range graf have max idx 98 but v is 99
+    if f[u][v] > 0 and u not in graf[v]: #test6 out of range graf have max idx 98 but v is 99
         graf[v].append(u)
     if e[u] == 0:
         overflow[H].remove(u)
@@ -127,7 +127,7 @@ def edge_weight(C_p,C_q):
     return np.exp(number)
 
 #считываем изображение, строим из него граф, подаём на вход. Попавшие в min cut вершины - чёрные, остальные - белые. 
-image = Image.open("banana-resize.jpg").convert('L') #Открываем изображение. 
+image = Image.open("15 on 20.jpg").convert('L') #Открываем изображение. 
 draw = ImageDraw.Draw(image) #Создаем инструмент для рисования. 
 width = image.size[0] #Определяем ширину. 
 height = image.size[1] #Определяем высоту. 	
@@ -143,7 +143,6 @@ sigma = 2.0
 
 
 vertex_count = len(intence_vals)
-edge_count = 4 * (height - 1) * (width - 1) + 4 * (height - 2) * (width - 2) # если считать ребро неориентированным
 flow_matrix = np.zeros((vertex_count + 2, vertex_count + 2))
 flow_matrix.fill(-1)# ? помешает ли?
 edge_array = []
@@ -160,6 +159,8 @@ print("Введите координаты пикселей фона через 
 
 for i in range (bcg_pixel_num):
     x, y = map(int,input().split())
+    x-=1
+    y-=1
     bcg.add(y * width + x)
     hist_bcg[matrix[y][x]] += 1 # прибавляем число вхождений пикселя заднонной интенсивности на 1 
 
@@ -172,6 +173,8 @@ hist_obj = np.zeros(256)
 print("Введите координаты пикселей объекта через пробел \n")
 for i in range (obj_pixel_num):
     x, y = map(int,input().split())
+    x-=1
+    y-=1
     obj.add(y * width + x)
     hist_obj[matrix[y][x]] += 1 # прибавляем число вхождений пикселя заднонной интенсивности на 1 
 
@@ -257,8 +260,11 @@ print(overflow)
 
 
 while H >= 0:
-    
-    u = overflow[H][0] #test2, test4 index out of range // overflow[H][0] = 0 but overflow[H][0] isnt 
+    if(len(overflow[H])>0):
+        u = overflow[H][0] 
+    else:   
+        H = H-1
+        continue
     v = n
     for vi in graf[u]:
         if h[vi] + 1 == h[u] and c[u][vi] - f[u][vi] > 0:
