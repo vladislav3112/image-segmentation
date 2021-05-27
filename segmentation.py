@@ -8,7 +8,7 @@ def push(u, v, f, e, c, graf, h, H, overflow):
     f[u][v] += d
     f[v][u] -= d
     e[u] -= d
-    if f[u][v] > 0 and u not in graf[v]: #test6 out of range graf have max idx 98 but v is 99
+    if f[u][v] >= 0 and u not in graf[v]: #test6 out of range graf have max idx 98 but v is 99
         graf[v].append(u)
     if e[u] == 0:
         overflow[H].remove(u)
@@ -63,14 +63,14 @@ def global_r_opt(c, h, H, overflow, graf0, graf1):
         for u in listT[level]:
             for v in graf1[u]:
                 if listPoints[v]:
-                    if c[v][u] > 0:
+                    if c[v][u] >= 0:
                         temp.append(v)
                         if h[v] < len(listT):
-                            if e[v] > 0:
+                            if e[v] >= 0:
                                 overflow[h[v]].remove(v)
                                 overflow[len(listT)].append(v)
                             h[v] = len(listT)
-                            if H < h[v] and e[v] > 0:
+                            if H < h[v] and e[v] >= 0:
                                 H = h[v]
                         listPoints[v] = False
         level += 1
@@ -85,14 +85,14 @@ def global_r_opt(c, h, H, overflow, graf0, graf1):
         for u in listS[level]:
             for v in graf0[u]:
                 if listPoints[v]:
-                    if c[u][v] > 0:
+                    if c[u][v] >= 0:
                         temp.append(v)
                         if h[v] < len(listS):
-                            if e[v] > 0:
+                            if e[v] >= 0:
                                 overflow[h[v]].remove(v)
                                 overflow[len(listS)].append(v)
                             h[v] = len(listS)
-                            if H < h[v] and e[v] > 0:
+                            if H < h[v] and e[v] >= 0:
                                 H = h[v]
                         listPoints[v] = False
         level += 1
@@ -161,7 +161,7 @@ for i in range (bcg_pixel_num):
     x, y = map(int,input().split())
     x-=1
     y-=1
-    bcg.add(y * width + x)
+    bcg.add(y * width + x + 1)
     hist_bcg[matrix[y][x]] += 1 # прибавляем число вхождений пикселя заднонной интенсивности на 1 
 
 #!!! в matrix почему-то инвертированы размерноси по сравнению с size[0] и size[1]
@@ -175,7 +175,7 @@ for i in range (obj_pixel_num):
     x, y = map(int,input().split())
     x-=1
     y-=1
-    obj.add(y * width + x)
+    obj.add(y * width + x + 1)
     hist_obj[matrix[y][x]] += 1 # прибавляем число вхождений пикселя заднонной интенсивности на 1 
 
 vertex_set = set()
@@ -198,20 +198,24 @@ for pixel in obj:
 #histogram and lambda edges:
 for pixel in vertex_set:
     if pixel != 0 and pixel != flow_matrix.shape[0] - 1:
-        flow_matrix[0,pixel // height] = - lam * np.log(max(hist_obj[intence_vals[pixel - 1]]/obj_pixel_num,1))  # частота встречаемости / кол-во = вероятность
-        flow_matrix[pixel % width, flow_matrix.shape[0] - 1] = - lam * np.log(max(hist_bcg[intence_vals[pixel - 1]]/bcg_pixel_num,1))# * ln(Hist_bcg[pixel])
+        flow_matrix[0,pixel] = - lam * np.log(hist_obj[intence_vals[pixel - 1]]/obj_pixel_num +10e-6)  # частота встречаемости / кол-во = вероятность
+        flow_matrix[pixel, flow_matrix.shape[0] - 1] = - lam * np.log(hist_bcg[intence_vals[pixel - 1]]/bcg_pixel_num + 10e-6)# * ln(Hist_bcg[pixel])
 
 #horizontal edges:
 for i in range(0 , height - 1):
-    for j in range(1 , width - 1):
-        if i < width - 2:
+    for j in range(0 , width - 1):
+        if i < width - 1:
             weight = edge_weight(int(matrix[i][j]),int(matrix[i + 1][j])) 
-            flow_matrix[i * width + j][(i + 1)* width + j] = weight
+            flow_matrix[i * width + j + 1][(i + 1)* width + j + 1] = weight
         if j < height - 1:
             weight = edge_weight(int(matrix[i][j]),int(matrix[i][j + 1])) 
-            flow_matrix[i * width + j][i * width + j + 1] = weight
-        #add edge((i,j);(i,j + 1))
-
+            flow_matrix[i * width + j + 1][i * width + j + 1 + 1] = weight
+        if i > 0:
+            weight = edge_weight(int(matrix[i][j]),int(matrix[i - 1][j])) 
+            flow_matrix[i * width + j + 1][(i - 1) * width + j + 1 + 1] = weight
+        if j > 0:
+            weight = edge_weight(int(matrix[i][j]),int(matrix[i][j - 1])) 
+            flow_matrix[i * width + j + 1][i * width + (j - 1) + 1 + 1] = weight
 #graph fillina template 
 
 print(flow_matrix)
