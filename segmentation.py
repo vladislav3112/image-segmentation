@@ -2,13 +2,17 @@ import copy
 import numpy as np
 from PIL import Image, ImageDraw
 
+
+
+
+
 # max flow
 def push(u, v, f, e, c, graf, h, H, overflow):
     d = min(e[u], c[u][v] - f[u][v])
     f[u][v] += d
     f[v][u] -= d
     e[u] -= d
-    if f[u][v] >= 0 and u not in graf[v]: #test6 out of range graf have max idx 98 but v is 99
+    if f[u][v] != 0 and u not in graf[v]: #test6 out of range graf have max idx 98 but v is 99
         graf[v].append(u)
     if e[u] == 0:
         overflow[H].remove(u)
@@ -63,10 +67,10 @@ def global_r_opt(c, h, H, overflow, graf0, graf1):
         for u in listT[level]:
             for v in graf1[u]:
                 if listPoints[v]:
-                    if c[v][u] >= 0:
+                    if c[v][u] > 0:
                         temp.append(v)
                         if h[v] < len(listT):
-                            if e[v] >= 0:
+                            if e[v] > 0:
                                 overflow[h[v]].remove(v)
                                 overflow[len(listT)].append(v)
                             h[v] = len(listT)
@@ -85,14 +89,14 @@ def global_r_opt(c, h, H, overflow, graf0, graf1):
         for u in listS[level]:
             for v in graf0[u]:
                 if listPoints[v]:
-                    if c[u][v] >= 0:
+                    if c[u][v] > 0:
                         temp.append(v)
                         if h[v] < len(listS):
-                            if e[v] >= 0:
+                            if e[v] > 0:
                                 overflow[h[v]].remove(v)
                                 overflow[len(listS)].append(v)
                             h[v] = len(listS)
-                            if H < h[v] and e[v] >= 0:
+                            if H < h[v] and e[v] > 0:
                                 H = h[v]
                         listPoints[v] = False
         level += 1
@@ -127,7 +131,7 @@ def edge_weight(C_p,C_q):
     return np.exp(number)
 
 #считываем изображение, строим из него граф, подаём на вход. Попавшие в min cut вершины - чёрные, остальные - белые. 
-image = Image.open("15 on 20.jpg").convert('L') #Открываем изображение. 
+image = Image.open("banana-resize.jpg").convert('L') #Открываем изображение. 
 draw = ImageDraw.Draw(image) #Создаем инструмент для рисования. 
 width = image.size[0] #Определяем ширину. 
 height = image.size[1] #Определяем высоту. 	
@@ -140,11 +144,10 @@ print(intence_vals)
 sigma = 2.0
 
 #0 - чёрный цвет, 255 - белый
-
+#matrix2[(elem-1) % width][(elem-1) // height]
 
 vertex_count = len(intence_vals)
 flow_matrix = np.zeros((vertex_count + 2, vertex_count + 2))
-flow_matrix.fill(-1)# ? помешает ли?
 edge_array = []
 
 
@@ -188,12 +191,12 @@ lam = 50
 
 #special edges:
 for pixel in bcg:
-    flow_matrix[0, pixel] = 0
+    flow_matrix[0, pixel] = 10e-6
     flow_matrix[pixel, flow_matrix.shape[0] - 1] = 100000
 
 for pixel in obj:
     flow_matrix[0,pixel] = 100000
-    flow_matrix[pixel, flow_matrix.shape[0] - 1] = 0
+    flow_matrix[pixel, flow_matrix.shape[0] - 1] = 10e-6
 
 #histogram and lambda edges:
 for pixel in vertex_set:
@@ -220,8 +223,8 @@ for i in range(0 , height - 1):
 
 print(flow_matrix)
 for i in range (vertex_count + 2):
-    if(len(np.argwhere(flow_matrix[i] >= 0))>0):
-        edge_list = np.hstack(np.argwhere(flow_matrix[i] >= 0)).tolist()
+    if(len(np.argwhere(flow_matrix[i]))>0):
+        edge_list = np.hstack(np.argwhere(flow_matrix[i])).tolist()
     else:
         edge_list = []
     edge_array.append(edge_list)
@@ -294,14 +297,15 @@ def dfs(visited, graph, node):
         for neighbour in graph[node]:
             dfs(visited, graph, neighbour)
 
-vertex_array = dfs(visited, graf, 0)
+dfs(visited, graf, 0)
 
 matrix2 = matrix.copy()
 
 for i in range(height):
     for j in range(width):
-        matrix2[i][j] = 255
-for elem in vertex_array:
-    matrix2[(elem-1) // height][(elem-1) % width] = 0
+        matrix2[i][j] = 0
+for elem in visited:
+    if elem != 0 and elem != width * height:
+        matrix2[(elem) // width][(elem) % height] = 255
 result = Image.fromarray(matrix2)
-result.save('seg_output.jpg')
+result.save('seg_output.jpg') 
