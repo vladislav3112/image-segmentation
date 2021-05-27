@@ -123,19 +123,17 @@ def c_for_opt(c, f):
 
 #основная формула для сегментации   
 def edge_weight(C_p,C_q):
-    number = -(C_p-C_q + 10e-6)*(C_p-C_q + 10e-6)/(2 * sigma * sigma)
+    number = -(C_p-C_q)*(C_p-C_q)/(2 * sigma * sigma)
     return np.exp(number)
 
 #считываем изображение, строим из него граф, подаём на вход. Попавшие в min cut вершины - чёрные, остальные - белые. 
-image = Image.open("15 on 20.jpg").convert('L') #Открываем изображение. 
+image = Image.open("kvadr.jpg").convert('L') #Открываем изображение. 
 draw = ImageDraw.Draw(image) #Создаем инструмент для рисования. 
 width = image.size[0] #Определяем ширину. 
 height = image.size[1] #Определяем высоту. 	
 pix = image.load() #Выгружаем значения пикселей.
 matrix = np.asarray(image)
-print(matrix)
 intence_vals = matrix.ravel()
-print(intence_vals)
 # lambda and sigma
 sigma = 10
 
@@ -187,18 +185,18 @@ lam = 50
 
 #special edges:
 for pixel in bcg:
-    flow_matrix[0, pixel] = 10e-6
+    flow_matrix[0, pixel] = 0
     flow_matrix[pixel, flow_matrix.shape[0] - 1] = 100000
 
 for pixel in obj:
     flow_matrix[0,pixel] = 100000
-    flow_matrix[pixel, flow_matrix.shape[0] - 1] = 10e-6
+    flow_matrix[pixel, flow_matrix.shape[0] - 1] = 0
 
 #histogram and lambda edges:
 for pixel in vertex_set:
     if pixel != 0 and pixel != flow_matrix.shape[0] - 1:
-        flow_matrix[0,pixel] = - lam * np.log(hist_obj[intence_vals[pixel - 1]]/obj_pixel_num +10e-6)  # частота встречаемости / кол-во = вероятность
-        flow_matrix[pixel, flow_matrix.shape[0] - 1] = - lam * np.log(hist_bcg[intence_vals[pixel - 1]]/bcg_pixel_num + 10e-6)# * ln(Hist_bcg[pixel])
+        flow_matrix[0,pixel] = - lam * np.log(hist_bcg[intence_vals[pixel - 1]]/obj_pixel_num + 1e-6) # частота встречаемости / кол-во = вероятность
+        flow_matrix[pixel, flow_matrix.shape[0] - 1] = - lam * np.log(hist_obj[intence_vals[pixel - 1]]/bcg_pixel_num + 1e-6)# * ln(Hist_bcg[pixel])
 
 #horizontal edges:
 for i in range(0 , height - 1):
