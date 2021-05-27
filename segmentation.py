@@ -2,10 +2,6 @@ import copy
 import numpy as np
 from PIL import Image, ImageDraw
 
-
-
-
-
 # max flow
 def push(u, v, f, e, c, graf, h, H, overflow):
     d = min(e[u], c[u][v] - f[u][v])
@@ -127,11 +123,11 @@ def c_for_opt(c, f):
 
 #основная формула для сегментации   
 def edge_weight(C_p,C_q):
-    number = -(C_p-C_q)*(C_p-C_q)/(2 * sigma * sigma)
+    number = -(C_p-C_q + 10e-6)*(C_p-C_q + 10e-6)/(2 * sigma * sigma)
     return np.exp(number)
 
 #считываем изображение, строим из него граф, подаём на вход. Попавшие в min cut вершины - чёрные, остальные - белые. 
-image = Image.open("banana-resize.jpg").convert('L') #Открываем изображение. 
+image = Image.open("15 on 20.jpg").convert('L') #Открываем изображение. 
 draw = ImageDraw.Draw(image) #Создаем инструмент для рисования. 
 width = image.size[0] #Определяем ширину. 
 height = image.size[1] #Определяем высоту. 	
@@ -141,7 +137,7 @@ print(matrix)
 intence_vals = matrix.ravel()
 print(intence_vals)
 # lambda and sigma
-sigma = 2.0
+sigma = 10
 
 #0 - чёрный цвет, 255 - белый
 #matrix2[(elem-1) % width][(elem-1) // height]
@@ -207,10 +203,10 @@ for pixel in vertex_set:
 #horizontal edges:
 for i in range(0 , height - 1):
     for j in range(0 , width - 1):
-        if i < width - 1:
+        if i < height - 1:
             weight = edge_weight(int(matrix[i][j]),int(matrix[i + 1][j])) 
-            flow_matrix[i * width + j + 1][(i + 1)* width + j + 1] = weight
-        if j < height - 1:
+            flow_matrix[i * width + j + 1][(i + 1) * width + j + 1] = weight
+        if j < width - 1:
             weight = edge_weight(int(matrix[i][j]),int(matrix[i][j + 1])) 
             flow_matrix[i * width + j + 1][i * width + j + 1 + 1] = weight
         if i > 0:
@@ -253,7 +249,7 @@ if n-1 in overflow[0]:
 count_e(graf, e, c, f) # проталкивание в смежные с истоком
 H = global_r_opt(c, h, -1, overflow, graf0, graf1) # первая оптимизация
 
-m = 10 # частота оптимизации
+m = 50 # частота оптимизации
 count = 0
 # overflow.sort(key = lambda k: h[k], reverse = True)
 # отсортировать по высоте от максимума к минимуму
@@ -281,10 +277,10 @@ while H >= 0:
         H = push(u, v, f, e, c, graf, h, H, overflow)
     else:
         H = lift(u, h, c, f, graf, H, overflow)
-    count += 1
-    if count > m:
-        count = 0
-        H = global_r_opt(c_for_opt(c, f), h, H, overflow, graf0, graf1)
+    #count += 1
+    #if count > m:
+    #   count = 0
+    #    H = global_r_opt(c_for_opt(c, f), h, H, overflow, graf0, graf1)
 
 print('Ответ:', e[n - 1])
 print(graf)
@@ -304,8 +300,9 @@ matrix2 = matrix.copy()
 for i in range(height):
     for j in range(width):
         matrix2[i][j] = 0
+print("chislo eto ", width*height)
 for elem in visited:
-    if elem != 0 and elem != width * height:
-        matrix2[(elem) // width][(elem) % height] = 255
+    if elem != 0 and elem < width * height:
+        matrix2[(elem - 1) // width][(elem - 1) % width] = 255 
 result = Image.fromarray(matrix2)
 result.save('seg_output.jpg') 
