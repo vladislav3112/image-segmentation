@@ -127,7 +127,7 @@ def edge_weight(C_p,C_q):
     return np.exp(number)
 
 #считываем изображение, строим из него граф, подаём на вход. Попавшие в min cut вершины - чёрные, остальные - белые. 
-image = Image.open("banana1-gr-100.jpg").convert('L') #Открываем изображение. 
+image = Image.open("15 on 20.jpg").convert('L') #Открываем изображение. 
 draw = ImageDraw.Draw(image) #Создаем инструмент для рисования. 
 width = image.size[0] #Определяем ширину. 
 height = image.size[1] #Определяем высоту. 	
@@ -135,7 +135,7 @@ pix = image.load() #Выгружаем значения пикселей.
 matrix = np.asarray(image)
 intence_vals = matrix.ravel()
 # lambda and sigma
-sigma = 10
+sigma = 2
 
 #0 - чёрный цвет, 255 - белый
 #matrix2[(elem-1) % width][(elem-1) // height]
@@ -302,4 +302,4 @@ for elem in visited:
     if elem != 0 and elem < width * height:
         matrix2[(elem - 1) // width][(elem - 1) % width] = 255 
 result = Image.fromarray(matrix2)
-result.save('our-banana.jpg') 
+result.save('our-banana1.jpg') 
