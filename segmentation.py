@@ -127,7 +127,7 @@ def edge_weight(C_p,C_q):
     return np.exp(number)
 
 #считываем изображение, строим из него граф, подаём на вход. Попавшие в min cut вершины - чёрные, остальные - белые. 
-image = Image.open("kvadr.jpg").convert('L') #Открываем изображение. 
+image = Image.open("banana1-gr-100.jpg").convert('L') #Открываем изображение. 
 draw = ImageDraw.Draw(image) #Создаем инструмент для рисования. 
 width = image.size[0] #Определяем ширину. 
 height = image.size[1] #Определяем высоту. 	
@@ -195,8 +195,8 @@ for pixel in obj:
 #histogram and lambda edges:
 for pixel in vertex_set:
     if pixel != 0 and pixel != flow_matrix.shape[0] - 1:
-        flow_matrix[0,pixel] = - lam * np.log(hist_bcg[intence_vals[pixel - 1]]/obj_pixel_num + 1e-6) # частота встречаемости / кол-во = вероятность
-        flow_matrix[pixel, flow_matrix.shape[0] - 1] = - lam * np.log(hist_obj[intence_vals[pixel - 1]]/bcg_pixel_num + 1e-6)# * ln(Hist_bcg[pixel])
+        flow_matrix[0,pixel] = - lam * np.log(hist_bcg[intence_vals[pixel - 1]]/bcg_pixel_num + 1e-4) # частота встречаемости / кол-во = вероятность
+        flow_matrix[pixel, flow_matrix.shape[0] - 1] = - lam * np.log(hist_obj[intence_vals[pixel - 1]]/obj_pixel_num + 1e-4)# * ln(Hist_obj[pixel])
 
 #horizontal edges:
 for i in range(0 , height - 1):
@@ -215,7 +215,7 @@ for i in range(0 , height - 1):
             flow_matrix[i * width + j + 1][i * width + (j - 1) + 1 + 1] = weight
 #graph fillina template 
 
-print(flow_matrix)
+#print(flow_matrix)
 for i in range (vertex_count + 2):
     if(len(np.argwhere(flow_matrix[i]))>0):
         edge_list = np.hstack(np.argwhere(flow_matrix[i])).tolist()
@@ -251,13 +251,13 @@ m = 50 # частота оптимизации
 count = 0
 # overflow.sort(key = lambda k: h[k], reverse = True)
 # отсортировать по высоте от максимума к минимуму
-print(graf)
-print('c =', c)
-print('f =', f)
-print('e =', e)
-print('h =', h)
-print('H =', H)
-print(overflow)
+#print(graf)
+#print('c =', c)
+#print('f =', f)
+#print('e =', e)
+#print('h =', h)
+#print('H =', H)
+#print(overflow)
 
 
 while H >= 0:
@@ -280,13 +280,13 @@ while H >= 0:
     #   count = 0
     #    H = global_r_opt(c_for_opt(c, f), h, H, overflow, graf0, graf1)
 
-print('Ответ:', e[n - 1])
-print(graf)
+#print('Ответ:', e[n - 1])
+#print(graf)
 visited = set() # Set to keep track of visited nodes.
 
 def dfs(visited, graph, node):
     if node not in visited:
-        print (node)
+        #print (node)
         visited.add(node)
         for neighbour in graph[node]:
             dfs(visited, graph, neighbour)
@@ -298,9 +298,8 @@ matrix2 = matrix.copy()
 for i in range(height):
     for j in range(width):
         matrix2[i][j] = 0
-print("chislo eto ", width*height)
 for elem in visited:
     if elem != 0 and elem < width * height:
         matrix2[(elem - 1) // width][(elem - 1) % width] = 255 
 result = Image.fromarray(matrix2)
-result.save('seg_output.jpg') 
+result.save('our-banana.jpg') 
